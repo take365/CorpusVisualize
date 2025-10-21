@@ -29,6 +29,8 @@ def test_cli_pipeline(tmp_path):
             str(input_dir),
             "--output-dir",
             str(output_dir),
+            "--diar",
+            "energy_basic",
             "--limit",
             "1",
         ],
@@ -36,8 +38,13 @@ def test_cli_pipeline(tmp_path):
     )
 
     assert result.exit_code == 0, result.stdout
-    assert (output_dir / "segments.jsonl").exists()
-    content = (output_dir / "segments.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    convo_dir = output_dir / "sample"
+    assert convo_dir.is_dir()
+    segments_file = convo_dir / "segments.jsonl"
+    assert segments_file.exists()
+    content = segments_file.read_text(encoding="utf-8").strip().splitlines()
     assert content, "segments.jsonl should contain data"
     first = __import__("json").loads(content[0])
     assert "words" in first and isinstance(first["words"], list)
+    raw_text = convo_dir / "sample.raw.txt"
+    assert raw_text.exists()

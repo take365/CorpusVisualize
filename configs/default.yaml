@@ -1,5 +1,5 @@
 asr: dummy
-diarization: energy_split
+diarization: pyannote
 emotion: energy_based
 pitch: yin
 loudness: rms

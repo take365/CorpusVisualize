@@ -115,7 +115,7 @@ class SegmentSchema(BaseModel):
 
 
 class PipelineSettings(BaseModel):
-    diarization: str = "energy_split"
+    diarization: str = "pyannote"
     asr: str = "dummy"
     emotion: str = "energy_based"
     pitch: str = "yin"
@@ -131,6 +131,10 @@ class PipelineSettings(BaseModel):
     max_seg_sec: float = 30.0
     sample_rate: int = 16000
     output_format: str = "jsonl"
+    pyannote_threshold: Optional[float] = None
+    pyannote_min_cluster_size: Optional[int] = None
+    pyannote_min_duration_off: Optional[float] = None
+    pyannote_num_speakers: Optional[int] = None
 
 
 class SpeakerAggregate(BaseModel):
@@ -140,4 +144,3 @@ class SpeakerAggregate(BaseModel):
     avg_loudness: float
     avg_tempo: float
     dominant_emotion: str
-
