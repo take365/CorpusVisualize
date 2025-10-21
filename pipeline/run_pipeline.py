@@ -4,12 +4,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import math
 import os
 import typer
 import yaml
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from openai import OpenAI
 
 from .aggregate import aggregate_speakers, aggregates_to_dataframe
 from .asr import TranscribedSegment, transcribe
@@ -26,7 +29,7 @@ from .features import (
     WordFeatureExtractor,
 )
 from .emotion import EmotionAnalyzer
-from .asr import TranscribedSegment
+from .llm import SegmentDraft, WordBoundary, refine_segments_with_llm
 from .types import PipelineSettings, SegmentSchema
 
 load_dotenv()
@@ -51,6 +54,12 @@ ENV_MAPPING: Dict[str, str] = {
     "CV_PYANNOTE_MIN_CLUSTER_SIZE": "pyannote_min_cluster_size",
     "CV_PYANNOTE_MIN_DURATION_OFF": "pyannote_min_duration_off",
     "CV_PYANNOTE_NUM_SPEAKERS": "pyannote_num_speakers",
+    "CV_LLM_ENABLED": "llm_enabled",
+    "CV_LLM_BASE_URL": "llm_base_url",
+    "CV_LLM_MODEL": "llm_model",
+    "CV_LLM_API_KEY": "llm_api_key",
+    "CV_LLM_MAX_TOKENS": "llm_max_tokens",
+    "CV_LLM_TEMPERATURE": "llm_temperature",
 }
 
 
@@ -65,6 +74,7 @@ def _settings_from_env() -> Dict[str, str]:
         ("CV_MAX_SEG_SEC", "max_seg_sec"),
         ("CV_PYANNOTE_THRESHOLD", "pyannote_threshold"),
         ("CV_PYANNOTE_MIN_DURATION_OFF", "pyannote_min_duration_off"),
+        ("CV_LLM_TEMPERATURE", "llm_temperature"),
     ]
     for float_key, field in float_mappings:
         value = os.getenv(float_key)
@@ -77,6 +87,7 @@ def _settings_from_env() -> Dict[str, str]:
         ("CV_SAMPLE_RATE", "sample_rate"),
         ("CV_PYANNOTE_MIN_CLUSTER_SIZE", "pyannote_min_cluster_size"),
         ("CV_PYANNOTE_NUM_SPEAKERS", "pyannote_num_speakers"),
+        ("CV_LLM_MAX_TOKENS", "llm_max_tokens"),
     ]
     for int_key, field in int_mappings:
         value = os.getenv(int_key)
@@ -85,6 +96,11 @@ def _settings_from_env() -> Dict[str, str]:
                 values[field] = int(value)
             except ValueError:
                 pass
+    bool_mappings = [("CV_LLM_ENABLED", "llm_enabled")]
+    for bool_key, field in bool_mappings:
+        value = os.getenv(bool_key)
+        if value is not None:
+            values[field] = value.strip().lower() in {"1", "true", "yes", "on"}
     return values
 
 
@@ -133,6 +149,12 @@ def main(
     pyannote_min_cluster_size: Optional[int] = typer.Option(None, help="Minimum cluster size for pyannote clustering"),
     pyannote_min_duration_off: Optional[float] = typer.Option(None, help="Minimum silence duration for pyannote segmentation"),
     pyannote_num_speakers: Optional[int] = typer.Option(None, help="Estimated number of speakers for pyannote (optional)"),
+    llm: Optional[bool] = typer.Option(None, "--llm/--no-llm", help="Enable LLM-based sentence refinement"),
+    llm_base_url: Optional[str] = typer.Option(None, help="Base URL for LLM API (e.g. http://host:port/v1)"),
+    llm_model: Optional[str] = typer.Option(None, help="LLM model identifier"),
+    llm_api_key: Optional[str] = typer.Option(None, help="API key for LLM endpoint"),
+    llm_max_tokens: Optional[int] = typer.Option(None, help="Maximum tokens for LLM response"),
+    llm_temperature: Optional[float] = typer.Option(None, help="Sampling temperature for LLM response"),
     config: Optional[Path] = typer.Option(None, help="Optional YAML config"),
     limit: Optional[int] = typer.Option(None, help="Optional limit for number of files to process"),
 ) -> None:
@@ -158,6 +180,12 @@ def main(
         pyannote_min_cluster_size=pyannote_min_cluster_size,
         pyannote_min_duration_off=pyannote_min_duration_off,
         pyannote_num_speakers=pyannote_num_speakers,
+        llm_enabled=llm,
+        llm_base_url=llm_base_url,
+        llm_model=llm_model,
+        llm_api_key=llm_api_key,
+        llm_max_tokens=llm_max_tokens,
+        llm_temperature=llm_temperature,
     )
 
     input_dir = input_dir.expanduser().resolve()
@@ -187,6 +215,23 @@ def main(
     lexicon_highlighter = LexiconHighlighter(settings.lexicon)
     emotion_analyzer = EmotionAnalyzer(settings.ser_backend, device="cuda" if settings.ser_backend == "speechbrain" else "cpu")
     word_extractor = WordFeatureExtractor(settings.prosody_backend, settings.word_pitch_backend)
+
+    llm_client: Optional[OpenAI] = None
+    if settings.llm_enabled:
+        base_url = (settings.llm_base_url or "").strip()
+        if base_url:
+            base = base_url.rstrip("/")
+            if not base.endswith("/v1"):
+                base = f"{base}/v1"
+            try:
+                llm_client = OpenAI(api_key=settings.llm_api_key or "", base_url=base)
+            except Exception as exc:
+                console.print(
+                    f"[yellow]Failed to initialise LLM client ({exc}); continuing without LLM refinement.[/yellow]"
+                )
+                llm_client = None
+        else:
+            console.print("[yellow]LLM base URL is empty; disabling LLM refinement.[/yellow]")
 
     audio_files = _list_audio_files(input_dir)
     if limit is not None:
@@ -224,21 +269,56 @@ def main(
                 language=settings.language,
             )
 
+            raw_drafts: List[SegmentDraft] = []
+            for segment, transcription in zip(diarized, transcripts):
+                word_boundaries: List[WordBoundary] = []
+                for word in transcription.words:
+                    start = float(getattr(word, "start", segment.start))
+                    end = float(getattr(word, "end", start))
+                    if not math.isfinite(start) or not math.isfinite(end):
+                        continue
+                    if end <= start:
+                        end = start + 1e-3
+                    word_boundaries.append(
+                        WordBoundary(
+                            text=str(getattr(word, "text", "")),
+                            start=start,
+                            end=end,
+                        )
+                    )
+                raw_drafts.append(
+                    SegmentDraft(
+                        speaker=segment.speaker,
+                        start=segment.start,
+                        end=segment.end,
+                        text=str(transcription.text).strip(),
+                        words=word_boundaries,
+                    )
+                )
+
+            refined_drafts = refine_segments_with_llm(
+                raw_drafts,
+                llm_client,
+                settings.llm_model,
+                settings.llm_max_tokens,
+                settings.llm_temperature,
+            )
+
             raw_lines: List[str] = []
             file_segments: List[SegmentSchema] = []
 
-            for idx, (segment, transcription) in enumerate(zip(diarized, transcripts)):
+            for idx, seg in enumerate(refined_drafts):
                 progress.update(task, description=f"Analyzing {audio_path.name} segment {idx+1}")
-
-                seg_start = max(int(segment.start * sr), 0)
-                seg_end = min(int(segment.end * sr), audio.shape[-1])
+                synthetic = DiarizationSegment(seg.start, seg.end, seg.speaker)
+                seg_start = max(int(seg.start * sr), 0)
+                seg_end = min(int(seg.end * sr), audio.shape[-1])
                 segment_audio = audio[seg_start:seg_end] if seg_end > seg_start else audio
 
                 emotion_result = emotion_analyzer.analyse(segment_audio, sr)
                 if settings.ser_backend == "dummy":
-                    emotion_map = emotion_extractor(audio, sr, segment)
+                    emotion_map = emotion_extractor(audio, sr, synthetic)
                 else:
-                    emotion_map = emotion_result.scores or emotion_extractor(audio, sr, segment)
+                    emotion_map = emotion_result.scores or emotion_extractor(audio, sr, synthetic)
 
                 if "happiness" in emotion_map and "joy" not in emotion_map:
                     emotion_map["joy"] = emotion_map.pop("happiness")
@@ -249,32 +329,38 @@ def main(
                 total = sum(emotion_map.values()) or 1.0
                 emotion_map = {k: float(v) / total for k, v in emotion_map.items()}
 
-                words = word_extractor(
+                words_schema = word_extractor(
                     audio,
                     sr,
-                    transcription.words,
+                    seg.words,
                     emotion_result.valence,
                     emotion_result.arousal,
                 )
 
-                text_value = transcription.text
-                raw_lines.append(transcription.raw_text)
+                if seg.text:
+                    text_value = seg.text.strip()
+                elif seg.words:
+                    text_value = "".join(word.text for word in seg.words)
+                else:
+                    text_value = ""
+
+                raw_lines.append(text_value)
 
                 seg_schema = SegmentSchema(
                     id=f"{conversation_id}_s{idx:03d}",
                     conversation_id=conversation_id,
                     source_file=str(audio_path.relative_to(input_dir)),
-                    start=segment.start,
-                    end=segment.end,
-                    speaker=segment.speaker,
+                    start=seg.start,
+                    end=seg.end,
+                    speaker=seg.speaker,
                     text=text_value,
                     emotion=emotion_map,
-                    pitch=pitch_extractor(audio, sr, segment),
-                    loudness=loudness_extractor(audio, sr, segment),
-                    tempo=tempo_extractor(audio, sr, segment, text_value),
-                    dialect=dialect_scorer(audio, sr, segment, text_value),
-                    highlights=lexicon_highlighter(text_value, segment),
-                    words=words,
+                    pitch=pitch_extractor(audio, sr, synthetic),
+                    loudness=loudness_extractor(audio, sr, synthetic),
+                    tempo=tempo_extractor(audio, sr, synthetic, text_value),
+                    dialect=dialect_scorer(audio, sr, synthetic, text_value),
+                    highlights=lexicon_highlighter(text_value, synthetic),
+                    words=words_schema,
                     created_at=datetime.utcnow(),
                     analyzer={
                         "asr": settings.asr,
@@ -292,6 +378,7 @@ def main(
                         "word_pitch_backend": settings.word_pitch_backend,
                         "valence": f"{emotion_result.valence:.3f}",
                         "arousal": f"{emotion_result.arousal:.3f}",
+                        "llm_model": settings.llm_model if llm_client is not None and settings.llm_enabled else "disabled",
                     },
                 )
                 all_segments.append(seg_schema)
