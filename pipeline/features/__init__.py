@@ -6,6 +6,7 @@ from .loudness import LoudnessExtractor
 from .tempo import TempoExtractor
 from .dialect import DialectScorer
 from .lexicon import LexiconHighlighter
+from .word import WordFeatureExtractor
 
 __all__ = [
     "EmotionExtractor",
@@ -14,4 +15,5 @@ __all__ = [
     "TempoExtractor",
     "DialectScorer",
     "LexiconHighlighter",
+    "WordFeatureExtractor",
 ]

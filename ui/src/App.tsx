@@ -13,6 +13,7 @@ import {
   Square,
   PlayCircle,
   Download,
+  MessageSquareText,
 } from "lucide-react";
 import {
   Area,
@@ -32,6 +33,7 @@ import {
 import type { CorpusFile, Segment } from "./types";
 import { formatSeconds, parseJsonlFile } from "./utils/jsonl";
 import { downloadJson } from "./utils/download";
+import WordChatView from "./components/WordChatView";
 
 declare global {
   interface Window {
@@ -42,6 +44,8 @@ declare global {
 }
 
 type InputMode = "import" | "mic";
+
+type ViewMode = "analytics" | "chat";
 
 type FeatureToggleKey = "emotion" | "pitch" | "loudness" | "tempo" | "dialect" | "lexicon";
 
@@ -390,6 +394,16 @@ function getAudioContext(): AudioContext | null {
 export default function App() {
   const [activeTab, setActiveTab] = useState<InputMode>("import");
   const [toggles, setToggles] = useState<FeatureToggle>(initialFeatureToggles);
+  const [viewMode, setViewMode] = useState<ViewMode>("analytics");
+  const [audioSource, setAudioSource] = useState<{ url: string; name: string } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioSource) {
+        URL.revokeObjectURL(audioSource.url);
+      }
+    };
+  }, [audioSource]);
   const [data, setData] = useState<CorpusFile | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -432,6 +446,28 @@ export default function App() {
       console.error(err);
       setError("JSON/JSONL の読み込みに失敗しました。フォーマットをご確認ください。");
     }
+  };
+
+  const handleAudioUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setAudioSource((prev) => {
+      if (prev) {
+        URL.revokeObjectURL(prev.url);
+      }
+      const url = URL.createObjectURL(file);
+      return { url, name: file.name };
+    });
+    event.target.value = "";
+  };
+
+  const clearAudio = () => {
+    setAudioSource((prev) => {
+      if (prev) {
+        URL.revokeObjectURL(prev.url);
+      }
+      return null;
+    });
   };
 
   const startRecording = async () => {
@@ -658,7 +694,7 @@ export default function App() {
   const emotionKeys = useEmotionKeys(segments);
   const dialectKeys = useDialectKeys(segments);
 
-  const renderFeatureToggles = data ? (
+  const renderFeatureToggles = data && viewMode === "analytics" ? (
     <div className="flex flex-wrap gap-2 text-xs text-slate-500">
       {featureKeys.map((key) => (
         <button
@@ -671,6 +707,53 @@ export default function App() {
           {key}
         </button>
       ))}
+    </div>
+  ) : null;
+  const viewModeSwitcher = data ? (
+    <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+      <button
+        onClick={() => setViewMode("analytics")}
+        className={`rounded-full border px-3 py-1 transition ${
+          viewMode === "analytics"
+            ? "border-slate-700 bg-slate-800 text-white"
+            : "border-slate-300 bg-white text-slate-500"
+        }`}
+      >
+        分析ビュー
+      </button>
+      <button
+        onClick={() => setViewMode("chat")}
+        className={`rounded-full border px-3 py-1 transition ${
+          viewMode === "chat"
+            ? "border-indigo-600 bg-indigo-600 text-white"
+            : "border-slate-300 bg-white text-slate-500"
+        }`}
+      >
+        <span className="inline-flex items-center gap-1"><MessageSquareText size={12} /> チャットビュー</span>
+      </button>
+    </div>
+  ) : null;
+
+  const audioControls = viewMode === "chat" ? (
+    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+      <label className="flex cursor-pointer items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white px-3 py-1.5 transition hover:border-slate-400">
+        音声ファイルを選択
+        <input type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+      </label>
+      {audioSource ? (
+        <span className="text-slate-500">使用中: {audioSource.name}</span>
+      ) : (
+        <span className="text-slate-400">チャットビューと連動する音声をアップロードすると再生できます。</span>
+      )}
+      <button
+        onClick={clearAudio}
+        disabled={!audioSource}
+        className={`rounded-full border px-3 py-1.5 transition ${
+          audioSource ? "border-slate-200 text-slate-600 hover:border-slate-300" : "border-slate-200 text-slate-400 cursor-not-allowed"
+        }`}
+      >
+        クリア
+      </button>
     </div>
   ) : null;
 
@@ -820,10 +903,13 @@ export default function App() {
       </header>
 
       <main className="mx-auto mt-10 flex max-w-6xl flex-col gap-6 px-6">
+        {viewModeSwitcher}
+        {audioControls}
         {renderFeatureToggles}
 
         {data ? (
-          <>
+          viewMode === "analytics" ? (
+            <>
             <Card
               title="タイムライン"
               icon={<FileBarChart size={18} className="text-blue-500" />}
@@ -876,7 +962,10 @@ export default function App() {
                 ))}
               </div>
             </Card>
-          </>
+            </>
+          ) : (
+            <WordChatView segments={segments} duration={duration} audioUrl={audioSource?.url ?? null} />
+          )
         ) : (
           <Card title="サンプルビュー" icon={<Wand2 size={18} className="text-indigo-500" />}>
             <p className="text-sm text-slate-500">

@@ -12,6 +12,20 @@ export interface DialectScores {
   [region: string]: number;
 }
 
+export interface WordFeature {
+  text: string;
+  kana?: string;
+  accent?: string;
+  start: number;
+  end: number;
+  pitch_mean?: number;
+  pitch_curve?: number[];
+  loudness?: number;
+  tempo?: number;
+  valence?: number;
+  arousal?: number;
+}
+
 export interface Segment {
   id: string;
   conversation_id: string;
@@ -26,6 +40,7 @@ export interface Segment {
   tempo?: number;
   dialect?: DialectScores;
   highlights?: HighlightSpan[];
+  words?: WordFeature[];
   analyzer?: Record<string, string>;
 }
 

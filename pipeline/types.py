@@ -19,6 +19,38 @@ class HighlightSchema(BaseModel):
         return value
 
 
+class WordSchema(BaseModel):
+    text: str
+    kana: Optional[str] = None
+    accent: Optional[str] = None
+    start: float
+    end: float
+    pitch_mean: Optional[float] = None
+    pitch_curve: List[float] = Field(default_factory=list)
+    loudness: Optional[float] = None
+    tempo: Optional[float] = None
+    valence: Optional[float] = None
+    arousal: Optional[float] = None
+
+    @validator("end")
+    def _validate_word_duration(cls, value: float, values) -> float:
+        start = values.get("start", 0.0)
+        if value <= start:
+            raise ValueError("word end must be greater than start")
+        return float(value)
+
+    @validator("pitch_curve", pre=True, always=True)
+    def _ensure_pitch_curve(cls, value: Optional[List[float]]) -> List[float]:
+        if value is None:
+            return []
+        cleaned = []
+        for v in value:
+            if v != v or v in (float("inf"), float("-inf")):
+                continue
+            cleaned.append(float(v))
+        return cleaned
+
+
 class SegmentFeatures(BaseModel):
     emotion: Dict[str, float]
     pitch: List[float]
@@ -60,6 +92,7 @@ class SegmentSchema(BaseModel):
     tempo: float
     dialect: Dict[str, float]
     highlights: List[HighlightSchema] = Field(default_factory=list)
+    words: List[WordSchema] = Field(default_factory=list)
     created_at: datetime
     analyzer: Dict[str, str]
 
@@ -91,6 +124,9 @@ class PipelineSettings(BaseModel):
     dialect: str = "lexicon_tfidf"
     lexicon: str = "pos_dict"
     language: str = "ja"
+    ser_backend: str = "dummy"
+    prosody_backend: str = "unidic"
+    word_pitch_backend: str = "pyworld"
     min_seg_sec: float = 2.0
     max_seg_sec: float = 30.0
     sample_rate: int = 16000

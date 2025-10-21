@@ -8,6 +8,7 @@ from pipeline.features import (
     LoudnessExtractor,
     PitchExtractor,
     TempoExtractor,
+    WordFeatureExtractor,
 )
 
 
@@ -28,6 +29,7 @@ def test_feature_extractors():
     tempo = TempoExtractor()(audio, sr, segment, transcript)
     dialect = DialectScorer()(audio, sr, segment, transcript)
     highlights = LexiconHighlighter()(transcript, segment)
+    word_features = WordFeatureExtractor()(audio, sr, [type("W", (), {"text": "なるほど", "start": 0.0, "end": 0.5})()], 0.0, 0.1)
 
     assert abs(sum(emotion.values()) - 1.0) < 1e-6
     assert isinstance(pitch, list)
@@ -35,3 +37,4 @@ def test_feature_extractors():
     assert tempo > 0
     assert set(dialect.keys()) == {"kansai", "kanto", "tohoku", "kyushu", "hokkaido"}
     assert isinstance(highlights, list)
+    assert word_features and hasattr(word_features[0], "kana")

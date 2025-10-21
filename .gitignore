@@ -29,3 +29,5 @@ Thumbs.db
 data/
 tmp_audio/
 tmp_output/
+
+pretrained_models/

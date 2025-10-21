@@ -39,3 +39,5 @@ def test_cli_pipeline(tmp_path):
     assert (output_dir / "segments.jsonl").exists()
     content = (output_dir / "segments.jsonl").read_text(encoding="utf-8").strip().splitlines()
     assert content, "segments.jsonl should contain data"
+    first = __import__("json").loads(content[0])
+    assert "words" in first and isinstance(first["words"], list)

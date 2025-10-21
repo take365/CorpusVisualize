@@ -18,11 +18,27 @@ def test_segment_schema_validation():
         tempo=3.2,
         dialect={"kansai": 0.2, "kanto": 0.2, "tohoku": 0.2, "kyushu": 0.2, "hokkaido": 0.2},
         highlights=[{"startChar": 0, "endChar": 5, "tag": "dialect"}],
+        words=[
+            {
+                "text": "なるほど",
+                "kana": "なるほど",
+                "accent": "Heiban",
+                "start": 0.0,
+                "end": 1.0,
+                "pitch_mean": 210.0,
+                "pitch_curve": [200.0, 215.0],
+                "loudness": 0.4,
+                "tempo": 4.0,
+                "valence": 0.0,
+                "arousal": 0.1,
+            }
+        ],
         created_at=datetime.utcnow(),
         analyzer={
             "asr": "dummy",
             "diarization": "energy_split",
             "emotion": "energy_based",
+            "ser_backend": "dummy",
             "pitch": "yin",
             "loudness": "rms",
             "tempo": "chars_per_sec",
