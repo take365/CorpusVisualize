@@ -1,0 +1,13 @@
+asr: dummy
+diarization: energy_split
+emotion: energy_based
+pitch: yin
+loudness: rms
+tempo: chars_per_sec
+dialect: lexicon_tfidf
+lexicon: pos_dict
+language: ja
+min_seg_sec: 2.0
+max_seg_sec: 30.0
+sample_rate: 16000
+output_format: jsonl
