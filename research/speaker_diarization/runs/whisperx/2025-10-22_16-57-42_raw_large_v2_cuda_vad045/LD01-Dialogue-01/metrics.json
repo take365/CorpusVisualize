@@ -1,0 +1,17 @@
+{
+  "reference_length": 402,
+  "hypothesis_length": 402,
+  "matches": 228,
+  "substitutions": 177,
+  "insertions": 19,
+  "deletions": 2,
+  "accuracy": 0.5671641791044776,
+  "error_rate": 0.4925373134328358,
+  "speaker_accuracy": 1.0,
+  "speaker_matches": 228,
+  "speaker_total": 228,
+  "speaker_counts": {
+    "A": 196,
+    "B": 206
+  }
+}

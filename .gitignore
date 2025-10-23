@@ -1,6 +1,6 @@
 # Python virtual environments
 .venv/
-
+research/speaker_diarization/.venv/
 # Python cache
 __pycache__/
 *.py[cod]

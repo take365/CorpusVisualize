@@ -31,6 +31,7 @@ def test_cli_pipeline(tmp_path):
             str(output_dir),
             "--diar",
             "energy_basic",
+            "--no-llm",
             "--limit",
             "1",
         ],
