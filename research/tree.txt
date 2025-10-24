@@ -1,0 +1,487 @@
+HMD:
+total 20
+drwxrwxrwx 1 oka oka  4096 Oct 24 00:37 data
+drwxrwxrwx 1 oka oka  4096 Oct 24 12:34 src
+-rwxrwxrwx 1 oka oka 10206 Oct 23 17:34 クラスタリングの可視化.txt
+-rwxrwxrwx 1 oka oka  6046 Oct 23 13:05 概要.md
+
+HMD/data:
+total 71164
+drwxrwxrwx 1 oka oka     4096 Oct 24 10:12 LD01-Dialogue-01
+-rwxrwxrwx 1 oka oka     1244 Oct 21 21:44 LD01-Dialogue-01.txt
+-rwxrwxrwx 1 oka oka  8092680 Oct 21 10:06 LD01-Dialogue-01.wav
+drwxrwxrwx 1 oka oka     4096 Oct 24 09:50 LD10-Dialogue-06
+-rwxrwxrwx 1 oka oka     1643 Oct 22 09:36 LD10-Dialogue-06.txt.bak
+-rwxrwxrwx 1 oka oka 14016064 Oct 21 10:05 LD10-Dialogue-06.wav
+drwxrwxrwx 1 oka oka     4096 Oct 24 13:36 SD03-Dialogue-08
+-rwxrwxrwx 1 oka oka      292 Oct 22 09:37 SD03-Dialogue-08.txt
+-rwxrwxrwx 1 oka oka  1857764 Oct 21 10:06 SD03-Dialogue-08.wav
+drwxrwxrwx 1 oka oka     4096 Oct 24 13:36 SD07-Dialogue-01
+-rwxrwxrwx 1 oka oka      216 Oct 22 09:30 SD07-Dialogue-01.txt
+-rwxrwxrwx 1 oka oka  1454020 Oct 21 10:06 SD07-Dialogue-01.wav
+drwxrwxrwx 1 oka oka     4096 Oct 24 12:38 yuru
+-rwxrwxrwx 1 oka oka      216 Oct 22 09:30 yuru.txt.bak
+-rwxrwxrwx 1 oka oka 47437310 Oct 21 17:30 yuru.wav
+
+HMD/data/LD01-Dialogue-01:
+total 36
+drwxrwxrwx 1 oka oka  4096 Oct 23 18:09 audio
+drwxrwxrwx 1 oka oka  4096 Oct 24 12:34 cluster_sweep
+drwxrwxrwx 1 oka oka  4096 Oct 23 18:09 clusters
+drwxrwxrwx 1 oka oka  4096 Oct 23 18:09 embeddings
+drwxrwxrwx 1 oka oka  4096 Oct 23 18:08 features
+-rwxrwxrwx 1 oka oka   135 Oct 23 13:48 meta.json
+-rwxrwxrwx 1 oka oka  1203 Oct 23 13:48 plain.txt
+-rwxrwxrwx 1 oka oka  1967 Oct 23 13:48 segments.jsonl
+-rwxrwxrwx 1 oka oka   268 Oct 23 15:53 stage2_discourse.json
+drwxrwxrwx 1 oka oka  4096 Oct 23 20:09 viz
+-rwxrwxrwx 1 oka oka 24788 Oct 23 13:48 words.jsonl
+
+HMD/data/LD01-Dialogue-01/audio:
+total 7904
+-rwxrwxrwx 1 oka oka 8092680 Oct 23 18:09 LD01-Dialogue-01.wav
+
+HMD/data/LD01-Dialogue-01/cluster_sweep:
+total 340
+drwxrwxrwx 1 oka oka   4096 Oct 24 11:46 PCA50
+-rwxrwxrwx 1 oka oka 167901 Oct 24 12:34 index.html
+-rwxrwxrwx 1 oka oka  32971 Oct 24 12:34 section_l2.html
+-rwxrwxrwx 1 oka oka  32406 Oct 24 12:34 section_raw.html
+-rwxrwxrwx 1 oka oka  35532 Oct 24 12:34 section_whiten.html
+-rwxrwxrwx 1 oka oka  33984 Oct 24 12:34 section_zscore.html
+-rwxrwxrwx 1 oka oka  33004 Oct 24 12:34 section_zscore_l2.html
+
+HMD/data/LD01-Dialogue-01/cluster_sweep/PCA50:
+total 356
+-rwxrwxrwx 1 oka oka  11172 Oct 24 10:12 dbscan.html
+-rwxrwxrwx 1 oka oka 164688 Oct 24 11:36 index.html
+-rwxrwxrwx 1 oka oka  11621 Oct 24 10:12 k02.html
+-rwxrwxrwx 1 oka oka  12034 Oct 24 10:12 k03.html
+-rwxrwxrwx 1 oka oka  12465 Oct 24 10:12 k04.html
+-rwxrwxrwx 1 oka oka  12893 Oct 24 10:12 k05.html
+-rwxrwxrwx 1 oka oka  13319 Oct 24 10:12 k06.html
+-rwxrwxrwx 1 oka oka  13750 Oct 24 10:12 k07.html
+-rwxrwxrwx 1 oka oka  14165 Oct 24 10:12 k08.html
+-rwxrwxrwx 1 oka oka  14591 Oct 24 10:12 k09.html
+-rwxrwxrwx 1 oka oka  15023 Oct 24 10:12 k10.html
+-rwxrwxrwx 1 oka oka  15457 Oct 24 10:12 k11.html
+-rwxrwxrwx 1 oka oka  15883 Oct 24 10:12 k12.html
+-rwxrwxrwx 1 oka oka   8472 Oct 24 10:12 metrics.html
+
+HMD/data/LD01-Dialogue-01/clusters:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 environment
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 spectral_series_pca64
+
+HMD/data/LD01-Dialogue-01/clusters/acoustic_stats:
+total 20
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 799 Oct 23 19:39 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 18:09 dbscan_umap2.json
+-rwxrwxrwx 1 oka oka 789 Oct 23 19:39 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_quarter.json
+
+HMD/data/LD01-Dialogue-01/clusters/environment:
+total 20
+-rwxrwxrwx 1 oka oka 795 Oct 23 19:39 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 789 Oct 23 19:39 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 785 Oct 23 18:09 dbscan_umap2.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_quarter.json
+
+HMD/data/LD01-Dialogue-01/clusters/prosody:
+total 20
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 791 Oct 23 19:39 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 788 Oct 23 18:09 dbscan_umap2.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_quarter.json
+
+HMD/data/LD01-Dialogue-01/clusters/speaker_embedding:
+total 20
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 794 Oct 23 19:39 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 788 Oct 23 18:09 dbscan_umap2.json
+-rwxrwxrwx 1 oka oka 785 Oct 23 19:39 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_quarter.json
+
+HMD/data/LD01-Dialogue-01/clusters/spectral_series_pca64:
+total 20
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 792 Oct 23 19:39 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 18:09 dbscan_umap2.json
+-rwxrwxrwx 1 oka oka 784 Oct 23 19:39 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 791 Oct 23 19:39 dbscan_umap2_quarter.json
+
+HMD/data/LD01-Dialogue-01/embeddings:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 environment
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 23 19:37 spectral_series_pca64
+
+HMD/data/LD01-Dialogue-01/embeddings/acoustic_stats:
+total 16
+-rwxrwxrwx 1 oka oka 1162 Oct 23 19:39 pca2.jsonl
+-rwxrwxrwx 1 oka oka 1150 Oct 23 18:09 umap2.jsonl
+-rwxrwxrwx 1 oka oka 1170 Oct 23 19:39 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 1155 Oct 23 19:39 umap2_quarter.jsonl
+
+HMD/data/LD01-Dialogue-01/embeddings/environment:
+total 16
+-rwxrwxrwx 1 oka oka 1180 Oct 23 19:39 pca2.jsonl
+-rwxrwxrwx 1 oka oka 1179 Oct 23 18:09 umap2.jsonl
+-rwxrwxrwx 1 oka oka 1139 Oct 23 19:39 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 1129 Oct 23 19:39 umap2_quarter.jsonl
+
+HMD/data/LD01-Dialogue-01/embeddings/prosody:
+total 16
+-rwxrwxrwx 1 oka oka 1177 Oct 23 19:39 pca2.jsonl
+-rwxrwxrwx 1 oka oka 1168 Oct 23 18:09 umap2.jsonl
+-rwxrwxrwx 1 oka oka 1127 Oct 23 19:39 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 1153 Oct 23 19:39 umap2_quarter.jsonl
+
+HMD/data/LD01-Dialogue-01/embeddings/speaker_embedding:
+total 16
+-rwxrwxrwx 1 oka oka 1157 Oct 23 19:39 pca2.jsonl
+-rwxrwxrwx 1 oka oka 1167 Oct 23 18:09 umap2.jsonl
+-rwxrwxrwx 1 oka oka 1144 Oct 23 19:39 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 1156 Oct 23 19:39 umap2_quarter.jsonl
+
+HMD/data/LD01-Dialogue-01/embeddings/spectral_series_pca64:
+total 16
+-rwxrwxrwx 1 oka oka 1184 Oct 23 19:39 pca2.jsonl
+-rwxrwxrwx 1 oka oka 1142 Oct 23 18:09 umap2.jsonl
+-rwxrwxrwx 1 oka oka 1156 Oct 23 19:39 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 1140 Oct 23 19:39 umap2_quarter.jsonl
+
+HMD/data/LD01-Dialogue-01/features:
+total 204
+-rwxrwxrwx 1 oka oka 59594 Oct 23 19:39 acoustic_stats.jsonl
+-rwxrwxrwx 1 oka oka  3479 Oct 23 19:39 environment.jsonl
+-rwxrwxrwx 1 oka oka  4450 Oct 23 19:39 prosody.jsonl
+-rwxrwxrwx 1 oka oka 69913 Oct 23 19:39 speaker_embedding.jsonl
+-rwxrwxrwx 1 oka oka 57815 Oct 23 19:39 spectral_series_raw.jsonl
+
+HMD/data/LD01-Dialogue-01/viz:
+total 224
+-rwxrwxrwx 1 oka oka 82166 Oct 23 19:47 2025-10-23 19_47_57-HMD 文単位クラスタリング可視化.png
+-rwxrwxrwx 1 oka oka 86394 Oct 23 19:48 2025-10-23 19_48_05-HMD 文単位クラスタリング可視化.png
+-rwxrwxrwx 1 oka oka  3297 Oct 23 19:39 data_manifest.json
+-rwxrwxrwx 1 oka oka 46437 Oct 23 19:39 index.html
+
+HMD/data/LD10-Dialogue-06:
+total 20
+drwxrwxrwx 1 oka oka  4096 Oct 23 23:55 audio
+drwxrwxrwx 1 oka oka  4096 Oct 24 13:35 cluster_sweep
+drwxrwxrwx 1 oka oka  4096 Oct 23 23:55 clusters
+drwxrwxrwx 1 oka oka  4096 Oct 23 23:55 embeddings
+drwxrwxrwx 1 oka oka  4096 Oct 23 23:55 features
+-rwxrwxrwx 1 oka oka   150 Oct 23 23:35 meta.json
+-rwxrwxrwx 1 oka oka  1431 Oct 23 23:35 plain.txt
+-rwxrwxrwx 1 oka oka  2918 Oct 23 23:35 segments.jsonl
+-rwxrwxrwx 1 oka oka   268 Oct 23 23:47 stage2_discourse.json
+drwxrwxrwx 1 oka oka  4096 Oct 23 23:55 viz
+drwxrwxrwx 1 oka oka  4096 Oct 23 21:12 whisperx
+-rwxrwxrwx 1 oka oka 10441 Oct 23 23:35 words.jsonl
+
+HMD/data/LD10-Dialogue-06/audio:
+total 13688
+-rwxrwxrwx 1 oka oka 14016064 Oct 23 23:55 LD10-Dialogue-06.wav
+
+HMD/data/LD10-Dialogue-06/cluster_sweep:
+total 552
+-rwxrwxrwx 1 oka oka  12089 Oct 24 10:07 dbscan.html
+-rwxrwxrwx 1 oka oka 169990 Oct 24 13:35 index.html
+-rwxrwxrwx 1 oka oka  12538 Oct 24 10:07 k02.html
+-rwxrwxrwx 1 oka oka  12951 Oct 24 10:07 k03.html
+-rwxrwxrwx 1 oka oka  13379 Oct 24 10:07 k04.html
+-rwxrwxrwx 1 oka oka  13797 Oct 24 10:07 k05.html
+-rwxrwxrwx 1 oka oka  14223 Oct 24 10:07 k06.html
+-rwxrwxrwx 1 oka oka  14654 Oct 24 10:07 k07.html
+-rwxrwxrwx 1 oka oka  15087 Oct 24 10:07 k08.html
+-rwxrwxrwx 1 oka oka  15503 Oct 24 10:07 k09.html
+-rwxrwxrwx 1 oka oka  15932 Oct 24 10:07 k10.html
+-rwxrwxrwx 1 oka oka  16371 Oct 24 10:07 k11.html
+-rwxrwxrwx 1 oka oka  16802 Oct 24 10:07 k12.html
+-rwxrwxrwx 1 oka oka   8492 Oct 24 10:07 metrics.html
+-rwxrwxrwx 1 oka oka  34785 Oct 24 13:35 section_l2.html
+-rwxrwxrwx 1 oka oka  33718 Oct 24 13:35 section_raw.html
+-rwxrwxrwx 1 oka oka  33916 Oct 24 13:35 section_whiten.html
+-rwxrwxrwx 1 oka oka  33753 Oct 24 13:35 section_zscore.html
+-rwxrwxrwx 1 oka oka  33814 Oct 24 13:35 section_zscore_l2.html
+
+HMD/data/LD10-Dialogue-06/clusters:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 environment
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 spectral_series_pca64
+
+HMD/data/LD10-Dialogue-06/clusters/acoustic_stats:
+total 16
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 1429 Oct 24 00:38 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 1405 Oct 24 00:38 dbscan_umap2_quarter.json
+
+HMD/data/LD10-Dialogue-06/clusters/environment:
+total 16
+-rwxrwxrwx 1 oka oka 1419 Oct 24 00:38 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 1403 Oct 24 00:38 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_quarter.json
+
+HMD/data/LD10-Dialogue-06/clusters/prosody:
+total 16
+-rwxrwxrwx 1 oka oka 1429 Oct 24 00:38 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 1416 Oct 24 00:38 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_quarter.json
+
+HMD/data/LD10-Dialogue-06/clusters/speaker_embedding:
+total 16
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 1421 Oct 24 00:38 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_quarter.json
+
+HMD/data/LD10-Dialogue-06/clusters/spectral_series_pca64:
+total 16
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 1420 Oct 24 00:38 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 1400 Oct 24 00:38 dbscan_umap2_quarter.json
+
+HMD/data/LD10-Dialogue-06/embeddings:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 environment
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 23 23:55 spectral_series_pca64
+
+HMD/data/LD10-Dialogue-06/embeddings/acoustic_stats:
+total 12
+-rwxrwxrwx 1 oka oka 2083 Oct 24 00:38 pca2.jsonl
+-rwxrwxrwx 1 oka oka 2065 Oct 24 00:38 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 2060 Oct 24 00:38 umap2_quarter.jsonl
+
+HMD/data/LD10-Dialogue-06/embeddings/environment:
+total 12
+-rwxrwxrwx 1 oka oka 2108 Oct 24 00:38 pca2.jsonl
+-rwxrwxrwx 1 oka oka 2071 Oct 24 00:38 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 2036 Oct 24 00:38 umap2_quarter.jsonl
+
+HMD/data/LD10-Dialogue-06/embeddings/prosody:
+total 12
+-rwxrwxrwx 1 oka oka 2102 Oct 24 00:38 pca2.jsonl
+-rwxrwxrwx 1 oka oka 2076 Oct 24 00:38 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 2051 Oct 24 00:38 umap2_quarter.jsonl
+
+HMD/data/LD10-Dialogue-06/embeddings/speaker_embedding:
+total 12
+-rwxrwxrwx 1 oka oka 2063 Oct 24 00:38 pca2.jsonl
+-rwxrwxrwx 1 oka oka 2024 Oct 24 00:38 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 2023 Oct 24 00:38 umap2_quarter.jsonl
+
+HMD/data/LD10-Dialogue-06/embeddings/spectral_series_pca64:
+total 12
+-rwxrwxrwx 1 oka oka 2104 Oct 24 00:38 pca2.jsonl
+-rwxrwxrwx 1 oka oka 2033 Oct 24 00:38 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 2090 Oct 24 00:38 umap2_quarter.jsonl
+
+HMD/data/LD10-Dialogue-06/features:
+total 348
+-rwxrwxrwx 1 oka oka 106368 Oct 24 00:38 acoustic_stats.jsonl
+-rwxrwxrwx 1 oka oka   6198 Oct 24 00:38 environment.jsonl
+-rwxrwxrwx 1 oka oka   7992 Oct 24 00:38 prosody.jsonl
+-rwxrwxrwx 1 oka oka 124717 Oct 24 00:38 speaker_embedding.jsonl
+-rwxrwxrwx 1 oka oka 102680 Oct 24 00:38 spectral_series_raw.jsonl
+
+HMD/data/LD10-Dialogue-06/viz:
+total 68
+-rwxrwxrwx 1 oka oka  3297 Oct 24 00:38 data_manifest.json
+-rwxrwxrwx 1 oka oka 62448 Oct 24 00:38 index.html
+
+HMD/data/LD10-Dialogue-06/whisperx:
+total 84
+-rwxrwxrwx 1 oka oka 82526 Oct 23 21:12 LD10-Dialogue-06.json
+
+HMD/data/SD03-Dialogue-08:
+total 8
+drwxrwxrwx 1 oka oka 4096 Oct 24 13:36 cluster_sweep
+-rwxrwxrwx 1 oka oka  135 Oct 23 21:23 meta.json
+-rwxrwxrwx 1 oka oka  275 Oct 23 21:23 plain.txt
+-rwxrwxrwx 1 oka oka  440 Oct 23 21:23 segments.jsonl
+-rwxrwxrwx 1 oka oka  269 Oct 23 21:43 stage2_discourse.json
+drwxrwxrwx 1 oka oka 4096 Oct 23 21:08 whisperx
+-rwxrwxrwx 1 oka oka 5958 Oct 23 21:23 words.jsonl
+
+HMD/data/SD03-Dialogue-08/cluster_sweep:
+total 0
+
+HMD/data/SD03-Dialogue-08/whisperx:
+total 16
+-rwxrwxrwx 1 oka oka 15865 Oct 23 21:08 SD03-Dialogue-08.json
+
+HMD/data/SD07-Dialogue-01:
+total 4
+drwxrwxrwx 1 oka oka 4096 Oct 24 13:36 cluster_sweep
+-rwxrwxrwx 1 oka oka  135 Oct 23 21:24 meta.json
+-rwxrwxrwx 1 oka oka  171 Oct 23 21:24 plain.txt
+-rwxrwxrwx 1 oka oka  340 Oct 23 21:24 segments.jsonl
+drwxrwxrwx 1 oka oka 4096 Oct 23 21:10 whisperx
+-rwxrwxrwx 1 oka oka 3807 Oct 23 21:24 words.jsonl
+
+HMD/data/SD07-Dialogue-01/cluster_sweep:
+total 0
+
+HMD/data/SD07-Dialogue-01/whisperx:
+total 12
+-rwxrwxrwx 1 oka oka 11882 Oct 23 21:10 SD07-Dialogue-01.json
+
+HMD/data/yuru:
+total 268
+drwxrwxrwx 1 oka oka   4096 Oct 24 00:32 audio
+drwxrwxrwx 1 oka oka   4096 Oct 24 12:40 cluster_sweep
+drwxrwxrwx 1 oka oka   4096 Oct 24 00:32 clusters
+drwxrwxrwx 1 oka oka   4096 Oct 24 00:32 embeddings
+drwxrwxrwx 1 oka oka   4096 Oct 24 00:32 features
+-rwxrwxrwx 1 oka oka    144 Oct 23 23:39 meta.json
+-rwxrwxrwx 1 oka oka  33282 Oct 23 23:39 plain.txt
+-rwxrwxrwx 1 oka oka    912 Oct 23 23:48 plain_half.txt
+-rwxrwxrwx 1 oka oka  75831 Oct 23 23:50 segments.jsonl
+-rwxrwxrwx 1 oka oka    271 Oct 24 01:19 stage2_discourse.json
+-rwxrwxrwx 1 oka oka    341 Oct 23 23:51 stage2_discourse_org.json
+drwxrwxrwx 1 oka oka   4096 Oct 24 01:26 viz
+-rwxrwxrwx 1 oka oka 152680 Oct 23 23:39 words.jsonl
+
+HMD/data/yuru/audio:
+total 46328
+-rwxrwxrwx 1 oka oka 47437310 Oct 24 00:32 yuru.wav
+
+HMD/data/yuru/cluster_sweep:
+total 2172
+-rwxrwxrwx 1 oka oka 1105595 Oct 24 12:40 index.html
+-rwxrwxrwx 1 oka oka  220377 Oct 24 12:39 section_l2.html
+-rwxrwxrwx 1 oka oka  219530 Oct 24 12:39 section_raw.html
+-rwxrwxrwx 1 oka oka  223224 Oct 24 12:40 section_whiten.html
+-rwxrwxrwx 1 oka oka  221229 Oct 24 12:39 section_zscore.html
+-rwxrwxrwx 1 oka oka  221231 Oct 24 12:40 section_zscore_l2.html
+
+HMD/data/yuru/clusters:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 environment
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 spectral_series_pca64
+
+HMD/data/yuru/clusters/acoustic_stats:
+total 160
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 38152 Oct 24 01:23 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 37977 Oct 24 01:23 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 37967 Oct 24 01:23 dbscan_umap2_quarter.json
+
+HMD/data/yuru/clusters/environment:
+total 160
+-rwxrwxrwx 1 oka oka 38065 Oct 24 01:23 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 37974 Oct 24 01:23 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 37965 Oct 24 01:23 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 37967 Oct 24 01:23 dbscan_umap2_quarter.json
+
+HMD/data/yuru/clusters/prosody:
+total 160
+-rwxrwxrwx 1 oka oka 38331 Oct 24 01:23 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 37972 Oct 24 01:23 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 37980 Oct 24 01:23 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_umap2_quarter.json
+
+HMD/data/yuru/clusters/speaker_embedding:
+total 160
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 37997 Oct 24 01:23 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 38000 Oct 24 01:23 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 37971 Oct 24 01:23 dbscan_umap2_quarter.json
+
+HMD/data/yuru/clusters/spectral_series_pca64:
+total 160
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_highd.json
+-rwxrwxrwx 1 oka oka 37975 Oct 24 01:23 dbscan_pca2.json
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_umap2_half.json
+-rwxrwxrwx 1 oka oka 37962 Oct 24 01:23 dbscan_umap2_quarter.json
+
+HMD/data/yuru/embeddings:
+total 0
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 acoustic_stats
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 environment
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 prosody
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 speaker_embedding
+drwxrwxrwx 1 oka oka 4096 Oct 24 00:32 spectral_series_pca64
+
+HMD/data/yuru/embeddings/acoustic_stats:
+total 168
+-rwxrwxrwx 1 oka oka 56031 Oct 24 01:23 pca2.jsonl
+-rwxrwxrwx 1 oka oka 54734 Oct 24 01:23 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 55721 Oct 24 01:23 umap2_quarter.jsonl
+
+HMD/data/yuru/embeddings/environment:
+total 168
+-rwxrwxrwx 1 oka oka 56709 Oct 24 01:23 pca2.jsonl
+-rwxrwxrwx 1 oka oka 56290 Oct 24 01:23 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 54604 Oct 24 01:23 umap2_quarter.jsonl
+
+HMD/data/yuru/embeddings/prosody:
+total 168
+-rwxrwxrwx 1 oka oka 56617 Oct 24 01:23 pca2.jsonl
+-rwxrwxrwx 1 oka oka 55566 Oct 24 01:23 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 54878 Oct 24 01:23 umap2_quarter.jsonl
+
+HMD/data/yuru/embeddings/speaker_embedding:
+total 168
+-rwxrwxrwx 1 oka oka 55632 Oct 24 01:23 pca2.jsonl
+-rwxrwxrwx 1 oka oka 55096 Oct 24 01:23 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 55321 Oct 24 01:23 umap2_quarter.jsonl
+
+HMD/data/yuru/embeddings/spectral_series_pca64:
+total 168
+-rwxrwxrwx 1 oka oka 56912 Oct 24 01:23 pca2.jsonl
+-rwxrwxrwx 1 oka oka 56021 Oct 24 01:23 umap2_half.jsonl
+-rwxrwxrwx 1 oka oka 56287 Oct 24 01:23 umap2_quarter.jsonl
+
+HMD/data/yuru/features:
+total 9000
+-rwxrwxrwx 1 oka oka 2798489 Oct 24 01:22 acoustic_stats.jsonl
+-rwxrwxrwx 1 oka oka  165191 Oct 24 01:22 environment.jsonl
+-rwxrwxrwx 1 oka oka  209697 Oct 24 01:22 prosody.jsonl
+-rwxrwxrwx 1 oka oka 3297505 Oct 24 01:22 speaker_embedding.jsonl
+-rwxrwxrwx 1 oka oka 2729988 Oct 24 01:22 spectral_series_raw.jsonl
+
+HMD/data/yuru/viz:
+total 3264
+-rwxrwxrwx 1 oka oka  249653 Oct 24 00:39 2025-10-24 00_39_22-HMD 文単位クラスタリング可視化_min15.png
+-rwxrwxrwx 1 oka oka  179710 Oct 24 00:50 2025-10-24 00_49_47-HMD 文単位クラスタリング可視化_25%.png
+-rwxrwxrwx 1 oka oka  211865 Oct 24 00:50 2025-10-24 00_50_06-HMD 文単位クラスタリング可視化_50%.png
+-rwxrwxrwx 1 oka oka  226256 Oct 24 00:50 2025-10-24 00_50_31-HMD 文単位クラスタリング可視化_PCA50_3色.png
+-rwxrwxrwx 1 oka oka  248486 Oct 24 01:10 2025-10-24 01_10_21-HMD 文単位クラスタリング可視化_5%.png
+-rwxrwxrwx 1 oka oka  248727 Oct 24 01:10 2025-10-24 01_10_28-HMD 文単位クラスタリング可視化_10%.png
+-rwxrwxrwx 1 oka oka  226709 Oct 24 01:24 2025-10-24 01_24_23-HMD 文単位クラスタリング可視化PCA50_2色.png
+-rwxrwxrwx 1 oka oka  224206 Oct 24 01:24 2025-10-24 01_24_31-HMD 文単位クラスタリング可視化_20%.png
+-rwxrwxrwx 1 oka oka  171772 Oct 24 01:24 2025-10-24 01_24_37-HMD 文単位クラスタリング可視化_33%.png
+-rwxrwxrwx 1 oka oka    3285 Oct 24 01:23 data_manifest.json
+-rwxrwxrwx 1 oka oka 1337858 Oct 24 01:23 index.html
+
+HMD/src:
+total 84
+-rwxrwxrwx 1 oka oka 14395 Oct 24 12:34 hmd_cluster_sweep.py
+-rwxrwxrwx 1 oka oka  9526 Oct 23 15:53 hmd_discourse_classifier.py
+-rwxrwxrwx 1 oka oka 37465 Oct 24 01:18 hmd_sentence_cluster.py
+-rwxrwxrwx 1 oka oka  5887 Oct 23 23:54 transcribe_whisper.py
+-rwxrwxrwx 1 oka oka  7396 Oct 23 22:58 transcribe_whisper_pure.py

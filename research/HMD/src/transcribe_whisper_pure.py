@@ -54,8 +54,8 @@ def parse_args() -> argparse.Namespace:
     )
     ap.add_argument(
         "--model",
-        default="large-v2",
-        help="Whisper モデル名（既定: large-v2）",
+        default="large-v3-turbo",
+        help="Whisper モデル名（既定: large-v3-turbo）",
     )
     ap.add_argument(
         "--initial-prompt",
