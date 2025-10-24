@@ -1,0 +1,264 @@
+segments.jsonl
+stage2_discourse.json
+LD01-Dialogue-01.wav
+あたりを使って文単位でのクラスタリングとその可視化をしたい
+
+
+
+
+■対象
+声質（Speaker Embedding）
+韻律 / プロソディ
+音響統計
+スペクトル系列
+環境情報
+分類分けはして出てきた全部の方式で取得
+
+
+■クラスタリング
+いったんPCA50次元に落とす。（もとが50以下ならそのまま）
+高次元でDBSCAN
+PCA2次元でDBSCAN
+UMAP2次元でDBSCAN
+※k-meanでもいいのだが、まぁ怪しいのはLLMにでもお願いするだろうし、とりあえずDBSCANで。
+
+■散布図
+・PCA　 高次元(PCA50)次元クラスタリング
+・PCA　 PCA2次元クラスタリング
+・UMAP　高次元(PCA50)次元クラスタリング
+・UMAP　UMAP2次元クラスタリング
+話者でいろわけ。はずれはグレー固定
+
+■UI
+種類の一覧
+→種類の散布図
+　→点をマウスオーバー
+　　点をクリック＝詳細エリアにテキスト、なんかボイスを示す波のやつが出せるとよい。ついでに音声の街頭部分を再生、
+
+■出力
+research/HMD/data/LD01-Dialogue-01の下にさらにフォルダつくって、整理する入れる。
+ChatGPT:
+思考時間: 15s
+
+
+ーーーーーーーーーーーーーーーーーーーーーchatGPT
+ぜんぶ可視化して見比べる、めちゃ良いです。やれます。
+まずは「何をどう抽出→どう縮約→どう可視化→どこに保存」の設計を固めましょう。コードはこの仕様どおりに後で作れます。
+
+1) 対象と特徴抽出（文＝segments.jsonl の各行に対して）
+種類	目的	入力窓	出力ベクトル例	抽出メモ
+声質（Speaker Embedding）	話者恒常特徴	文区間（start–end）	512次元（ECAPA-TDNN / pyannote）	WhisperX と同系。最重要。
+韻律 / プロソディ	抑揚/高さ/勢い	文区間	8〜12次元	F0平均/分散/レンジ、エナジー平均/レンジ、発話速度（文字数/秒の代理可）など。
+音響統計	言語に依らない基本統計	文区間	20〜40次元	MFCC 13次元＋Δ＋ΔΔ の mean/std、ゼロ交差率、スペクトル平坦度の mean/std など。
+スペクトル系列	周波数構造（やや高表現力）	文区間（フレーム系列→要約）	64〜128次元	メルスペクトログラム（例 80ch）の各チャネル mean/std（=160次元）→PCA64に縮約など。内容依存を少し含むので参考扱い。
+環境情報	雑音/反響/距離感	文区間＋周辺無音	6〜10次元	推定SNR、ノイズ床（非発話フレーム平均）、スペクトル減衰率、スペクトル傾斜、リバーブ proxy（スペクトルフラットネス/減衰）。
+
+すべて「文ごとに1ベクトル」を作るので、あとで同じIDで並べて可視化・比較可能。
+
+出力フォーマット（特徴保存）
+
+research/HMD/data/LD01-Dialogue-01/features/ に JSONL or Parquet で統一：
+
+speaker_embedding.jsonl
+{"seg_id": 1, "start": 0.03, "end": 3.12, "embedding": [...512...] }
+
+prosody.jsonl
+{"seg_id": 1, "f0_mean":..., "f0_std":..., "energy_mean":..., "speech_rate":..., ...}
+
+acoustic_stats.jsonl
+{"seg_id": 1, "mfcc_mean_1":..., "mfcc_std_1":..., "zcr_mean":..., "flatness_mean":..., ...}
+
+spectral_series_pca64.jsonl
+{"seg_id": 1, "vec": [...64...] }
+
+environment.jsonl
+{"seg_id": 1, "snr":..., "noise_floor_db":..., "reverb_proxy":..., ...}
+
+（速度重視なら Parquet にもできます。まずは JSONL でOK）
+
+2) 次元圧縮 & クラスタリング
+
+前処理：
+
+どの特徴でも 標準化（各次元 z-score）
+
+高次元はまず PCA→50次元（元が ≤50 次元ならスキップ）
+
+クラスタリング（各特徴種 × 以下すべて実行し比較）：
+
+DBSCAN（高次元＝PCA50上）
+
+DBSCAN（PCA2次元上）
+
+DBSCAN（UMAP2次元上）（PCA50→UMAP2、で2次元）
+
+DBSCAN の eps / min_samples は自動スイープ（例：eps∈{0.3,0.5,0.7}、min_samples∈{3,5,10}）して、クラスタ数と外れ値の割合を見てベストを採用（ヒューリスティックでOK）。
+
+結果保存（共通スキーマ）：
+
+clusters/<feature_name>/dbscan_highd.json
+{"seg_id": 1, "cluster": 0}（外れ値は -1）
+
+clusters/<feature_name>/dbscan_pca2.json
+
+clusters/<feature_name>/dbscan_umap2.json
+
+同時に次元圧縮結果も保存：
+
+embeddings/<feature_name>/pca2.jsonl → {"seg_id":1, "x":..., "y":...}
+
+embeddings/<feature_name>/umap2.jsonl → 同様
+
+3) 散布図（可視化）
+
+要件：
+
+色分け：話者クラスタ（DBSCANのラベル）。-1（外れ値）はグレー固定。
+
+ホバー：seg_id, 時刻, テキスト（最初の20〜40字）
+
+クリック：右ペインに詳細（全文テキスト、波形、音声再生ボタン）
+
+表示メニュー（左→右の構成）：
+
+種類（特徴）セレクト：Speaker Embedding / Prosody / Acoustic Stats / Spectral / Environment
+
+次元圧縮タイプセレクト：PCA(HighD) / PCA(2D) / UMAP(HighD) / UMAP(2D)
+
+選んだ組み合わせの散布図を １枚 表示
+
+Hover → tooltip、Click → 詳細エリア更新
+
+技術選択：
+
+フロント：Plotly.js（散布図＆ホバー/クリックが楽）
+
+波形＆音声：WaveSurfer.js（範囲再生、ズーム可能）
+
+データ供給：生成した JSON/JSONL を読み込む 静的HTML でOK（ローカルで開ける）。
+WSL→Windows ブラウザで閲覧可能にするため、ビルド済みの viz/index.html を出力。
+
+ファイル参照：
+
+元音声 *.wav は相対パス指定。
+クリック時に WaveSurfer へ start/end を渡して該当区間を再生。
+
+4) UI 仕様（静的HTMLの振る舞い）
+
+左カラム：
+
+「種類」ドロップダウン：speaker_embedding / prosody / acoustic_stats / spectral / environment
+
+「配置」ドロップダウン：DBSCAN on PCA50 / DBSCAN on PCA2 / DBSCAN on UMAP2
+
+eps と min_samples は自動決定値を表示（再クラスタは別ボタンで後日でもOK）
+
+中央：散布図（Plotly）
+
+点：seg_id を customdata に持たせる
+
+ホバー：seg_id, [start–end], text_head
+
+色：クラスタID（-1 は #b0b0b0）
+
+右カラム：詳細パネル
+
+seg_id, start/end, テキスト全文
+
+波形ビュー（WaveSurfer）+ 再生/停止/ループ
+
+同一クラスタの他セグメントへのリンク（クリックでジャンプ）
+
+出力先：
+
+research/HMD/data/LD01-Dialogue-01/
+  ├─ features/
+  ├─ embeddings/
+  ├─ clusters/
+  ├─ viz/
+  │   ├─ index.html         ← ダブルクリックで開ける
+  │   ├─ data_manifest.json ← 可視化で参照する各JSONへの相対パス一覧
+  │   ├─ js/, css/          ← Plotly, WaveSurfer 同梱（CDNでもOK）
+  └─ audio/
+      └─ LD01-Dialogue-01.wav  ← 再生元（相対パスで参照）
+
+5) 連携（LLM・話者推定との合わせ）
+
+LLM の stage2_discourse.json（A/B/C属性など）と、ここで得る 音響クラスタ を並べて見られるように：
+
+散布図の塗り分けを 切替：「クラスタ色」↔「LLM予測話者色」
+
+一致率のサマリ（テーブル）を viz/ に併設（後で実装）
+
+6) DBSCAN パラメータの初期値（ヒューリスティック）
+
+min_samples = max(3, round(0.01 * N_segments))（少なすぎる場合のノイズ対策）
+
+eps は k距離カーブで自動近似（k=5〜10）。
+まずは固定候補 {0.3, 0.5, 0.7} を試して、クラスタ数が2〜8・外れ値が 5〜30% のレンジになるように最適なものを選択。
+
+7) 実行フロー（後でスクリプト化する際の順番）
+
+segments.jsonl と 元 wav を入力
+
+各種特徴を抽出 → features/ に保存
+
+前処理（標準化・PCA）→ embeddings/ に保存
+
+DBSCAN（3パターン）→ clusters/ に保存
+
+UMAP 2D も保存
+
+viz/index.html を生成（Plotly + WaveSurfer、data_manifest.json 参照）
+
+8) 注意点（精度＆実務）
+
+短すぎる文（< 0.6s など）は embedding が不安定 → マージ or スキップの閾値を設ける　
+
+連続する同一クラスタ×近接時間は 後段でマージ できるようメタ情報保持
+
+Prosody は話者より感情/話法が出るので、最終判断の重みは小さめに
+
+Spectral 系は語彙影響も混ざるので、参考層として使う
+
+
+ーーーーーーーーーーーーーーーーー
+さらに追加
+
+短すぎる文（< 0.6s など）についてはまずはそのまま使う。実際に短い可能性もあるので。
+散布図押下の際は詳細エリアに１文の情報でだせそうなものはなるべく出す。
+
+F0平均/分散/レンジ、エナジー平均/レンジ、発話速度（文字数/秒の代理可）
+mean/std、ゼロ交差率、スペクトル平坦度の mean/std
+推定SNR、ノイズ床（非発話フレーム平均）、スペクトル減衰率、スペクトル傾斜、リバーブ proxy（スペクトルフラットネス/減衰）。
+とか？
+
+
+■参考　現在の階層構造
+
+research/HMD/:
+total 8
+drwxrwxrwx 1 oka oka 4096 Oct 23 13:48 data
+drwxrwxrwx 1 oka oka 4096 Oct 23 15:23 src
+-rwxrwxrwx 1 oka oka 6046 Oct 23 13:05 概要.md
+
+research/HMD/data:
+total 7908
+drwxrwxrwx 1 oka oka    4096 Oct 23 15:53 LD01-Dialogue-01
+-rwxrwxrwx 1 oka oka    1244 Oct 21 21:44 LD01-Dialogue-01.txt
+-rwxrwxrwx 1 oka oka 8092680 Oct 21 10:06 LD01-Dialogue-01.wav
+
+research/HMD/data/LD01-Dialogue-01:
+total 36
+-rwxrwxrwx 1 oka oka   135 Oct 23 13:48 meta.json
+-rwxrwxrwx 1 oka oka  1203 Oct 23 13:48 plain.txt
+-rwxrwxrwx 1 oka oka  1967 Oct 23 13:48 segments.jsonl
+-rwxrwxrwx 1 oka oka   268 Oct 23 15:53 stage2_discourse.json
+-rwxrwxrwx 1 oka oka 24788 Oct 23 13:48 words.jsonl
+
+research/HMD/src:
+total 20
+-rwxrwxrwx 1 oka oka 9526 Oct 23 15:53 hmd_discourse_classifier.py
+-rwxrwxrwx 1 oka oka 5698 Oct 23 13:46 transcribe_whisper.py
+
+
