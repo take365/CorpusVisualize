@@ -29,5 +29,7 @@ Thumbs.db
 data/
 tmp_audio/
 tmp_output/
+output/
+wav2vec2_checkpoints/
 
 pretrained_models/
