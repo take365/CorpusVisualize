@@ -3,11 +3,17 @@ from __future__ import annotations
 import os
 import string
 import warnings
+import logging
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
+
+from .quick_io import QuickArtifactsError, load_quick_artifacts
+
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class DiarizationSegment:
@@ -178,6 +184,68 @@ class PyannoteDiarizer:
         return segments
 
 
+
+class QuickClusterDiarizer:
+    """Reuse Quick diarization clusters produced ahead of the pipeline."""
+
+    def __init__(self, data_root: Optional[str] = None) -> None:
+        self._data_root = data_root
+        self._conversation_id: Optional[str] = None
+
+    def set_context(self, audio_path, conversation_id: Optional[str] = None) -> None:
+        base = conversation_id
+        if not base:
+            stem = getattr(audio_path, "stem", None)
+            if stem is None:
+                stem = os.path.splitext(os.path.basename(str(audio_path)))[0]
+            base = stem
+        self._conversation_id = str(base)
+
+    def __call__(self, audio: np.ndarray, sample_rate: int) -> List[DiarizationSegment]:
+        if self._conversation_id is None:
+            raise RuntimeError(
+                "QuickClusterDiarizer requires conversation context. "
+                "Call set_context() with the audio path before diarization."
+            )
+
+        try:
+            artifacts = load_quick_artifacts(self._conversation_id, data_root=self._data_root)
+        except QuickArtifactsError as exc:
+            raise RuntimeError(
+                f"Quick artifacts unavailable for '{self._conversation_id}': {exc}"
+            ) from exc
+
+        speaker_map: Dict[int, str] = {}
+        segments: List[DiarizationSegment] = []
+        for seg in artifacts.segments:
+            cluster = artifacts.cluster_map.get(seg.index)
+            if cluster is None:
+                raise RuntimeError(f"Cluster label missing for seg_id={seg.index}")
+            label = speaker_map.setdefault(cluster, _cluster_label(cluster))
+            segments.append(
+                DiarizationSegment(
+                    start=float(seg.start),
+                    end=float(seg.end),
+                    speaker=label,
+                )
+            )
+
+        logger.info(
+            "QuickClusterDiarizer using %s (clusters=%d, segments=%d)",
+            artifacts.segments_path,
+            artifacts.cluster_k,
+            len(segments),
+        )
+        return segments
+
+
+def _cluster_label(cluster_index: int) -> str:
+    alphabet = string.ascii_uppercase
+    if 0 <= cluster_index < len(alphabet):
+        return alphabet[cluster_index]
+    return f"S{cluster_index}"
+
+
 def get_diarizer(
     name: str,
     min_seg: float,
@@ -195,5 +263,8 @@ def get_diarizer(
         except RuntimeError as exc:
             warnings.warn(f"pyannote.audio の初期化に失敗したため EnergyBased にフォールバックします: {exc}")
             return EnergyBasedDiarizer(min_seg=min_seg, max_seg=max_seg)
+
+    if name in {"quick_cluster", "quick"}:
+        return QuickClusterDiarizer()
 
     raise ValueError(f"Unsupported diarization method: {name}")

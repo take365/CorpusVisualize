@@ -36,6 +36,9 @@ load_dotenv()
 app = typer.Typer(help="CorpusVisualize audio-processing pipeline")
 console = Console()
 
+DEFAULT_INPUT_DIR = Path(os.getenv("CV_INPUT_DIR", "data"))
+DEFAULT_OUTPUT_DIR = Path(os.getenv("CV_OUTPUT_DIR", "output"))
+
 
 ENV_MAPPING: Dict[str, str] = {
     "CV_ASR": "asr",
@@ -128,8 +131,16 @@ def _list_audio_files(input_dir: Path) -> List[Path]:
 
 @app.command()
 def main(
-    input_dir: Path = typer.Option(..., help='Directory containing audio files'),
-    output_dir: Path = typer.Option(..., help='Directory for processed outputs'),
+    input_dir: Path = typer.Option(
+        DEFAULT_INPUT_DIR,
+        help='Directory containing audio files',
+        show_default=True,
+    ),
+    output_dir: Path = typer.Option(
+        DEFAULT_OUTPUT_DIR,
+        help='Directory for processed outputs',
+        show_default=True,
+    ),
     emotion: Optional[str] = typer.Option(None, help="Emotion extractor method"),
     pitch: Optional[str] = typer.Option(None, help="Pitch extraction method"),
     loudness: Optional[str] = typer.Option(None, help="Loudness method"),
@@ -258,6 +269,10 @@ def main(
             conversation_dir.mkdir(parents=True, exist_ok=True)
             raw_text_rel = str(Path(conversation_id) / f"{conversation_id}.raw.txt")
             raw_text_path = conversation_dir / f"{conversation_id}.raw.txt"
+
+            set_context = getattr(diarizer, "set_context", None)
+            if callable(set_context):
+                set_context(audio_path, conversation_id)
 
             diarized: List[DiarizationSegment] = diarizer(audio, sr)
             transcripts = transcribe(

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import logging
 from typing import Dict, Iterable, List, Optional
 
 import numpy as np
 from rich.progress import track
 
 from .diarization import DiarizationSegment
+from .quick_io import QuickArtifactsError, load_quick_artifacts
 
 try:  # pragma: no cover - optional dependency
     from faster_whisper import WhisperModel
@@ -43,6 +45,8 @@ _SAMPLE_SENTENCES = [
 ]
 
 _MODEL_CACHE: Dict[str, WhisperModel] = {}
+
+logger = logging.getLogger(__name__)
 
 
 def _sentence_for_segment(segment: DiarizationSegment, conversation_id: str) -> str:
@@ -217,6 +221,42 @@ def _transcribe_with_whisper(
     return results
 
 
+def _build_quick_asr_results(conversation_id: str) -> List[Dict[str, object]]:
+    artifacts = load_quick_artifacts(conversation_id)
+    results: List[Dict[str, object]] = []
+    total_words = 0
+
+    for seg in artifacts.segments:
+        words_payload: List[Dict[str, object]] = []
+        for word in artifacts.words_by_segment.get(seg.index, []):
+            text = str(word.get("text", "")).strip()
+            if not text:
+                continue
+            start = float(word.get("start", seg.start))
+            end = float(word.get("end", start))
+            if end <= start:
+                continue
+            words_payload.append({"text": text, "start": start, "end": end})
+        words_payload.sort(key=lambda w: w.get("start", 0.0))
+        total_words += len(words_payload)
+        results.append(
+            {
+                "start": float(seg.start),
+                "end": float(seg.end),
+                "text": str(seg.text or "").strip(),
+                "words": words_payload,
+            }
+        )
+
+    logger.info(
+        "Quick ASR reuse from %s (segments=%d, words=%d)",
+        artifacts.segments_path,
+        len(results),
+        total_words,
+    )
+    return results
+
+
 def _dummy_words(text: str, start: float, end: float) -> List[WordTiming]:
     tokens = [tok for tok in text.replace("、", " ").replace("。", " ").split() if tok]
     if not tokens:
@@ -254,6 +294,17 @@ def transcribe(
             words = _dummy_words(sentence, segment.start, segment.end)
             results.append(TranscribedSegment(text=sentence, words=words, raw_text=sentence))
         return results
+
+    if method == "quick":
+        try:
+            asr_results = _build_quick_asr_results(conversation_id)
+        except QuickArtifactsError as exc:
+            raise RuntimeError(
+                f"Quick ASR artifacts unavailable for '{conversation_id}': {exc}"
+            ) from exc
+        if not asr_results:
+            return [TranscribedSegment(text="", words=[], raw_text="") for _ in segment_list]
+        return _align_transcripts(segment_list, asr_results)
 
     if method.startswith("whisper"):
         if audio is None or sample_rate is None:
