@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>会話タグ付きサンプルUI</title>
+<style>
+  :root{
+    --bg:#0b1020;--fg:#e7ebf3;--muted:#9aa4b2;--card:#111733;--chip:#1f2a52;--accent:#7cc6ff;--ok:#86efac;--warn:#facc15;--bad:#fda4af;
+  }
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;}
+  .wrap{max-width:980px;margin:32px auto;padding:0 16px;}
+  h1{font-size:20px;margin:0 0 16px 0;}
+  .turn{border-radius:16px;padding:14px 16px;margin:18px 0;box-shadow:0 6px 18px rgba(0,0,0,.25);position:relative;}
+  .turn.a{background:rgba(33,56,130,0.35);} /* SPEAKER A */
+  .turn.b{background:rgba(25,100,50,0.35);} /* SPEAKER B */
+  .meta{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .speaker{font-weight:700;letter-spacing:.02em}
+  .time{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .badge-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:12px;padding:4px 8px;border-radius:999px;background:var(--chip);color:#dbe7ff;border:1px solid rgba(255,255,255,.08)}
+  .chip.ok{background:rgba(22,163,74,.16);color:#c7ffd8;border-color:rgba(22,163,74,.35)}
+  .chip.warn{background:rgba(250,204,21,.15);color:#fff3bf;border-color:rgba(250,204,21,.35)}
+  .chip.bad{background:rgba(239,68,68,.15);color:#ffd2d2;border-color:rgba(239,68,68,.35)}
+  .text{font-size:18px;letter-spacing:.02em;margin:8px 0 6px 0;}
+  .kana{position:relative;height:36px;margin:0 0 8px 0;}
+  .kana span{position:absolute;display:inline-block;white-space:pre;transition:transform .2s;}
+  .kana span::after{content:attr(data-kana);font-size:16px}
+  .metrics{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+  .spark{width:100%;height:40px;display:block;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));}
+  .gapline{color:var(--muted);text-align:center;margin:8px 0;font-size:12px;}
+  .legend{margin-top:24px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>会話タグ付きサンプルUI（背景色・ターン間ギャップ表示付き）</h1>
+
+    <!-- Turn 1: SPEAKER A -->
+    <section class="turn a" data-start="0.00" data-end="6.20">
+      <div class="meta"><div class="speaker">SPEAKER A</div><div class="time">0:00.00 – 0:06.20</div></div>
+      <div class="badge-row"><span class="chip ok">尻つぼみ 0.82</span><span class="chip">結論先出し 0.64</span><span class="chip warn">フィラーやや多め</span></div>
+      <div class="text">先生こんにちは。あったり苦手な <strong>数学</strong> と <strong>科学</strong> の偏差、ちょっと上がりました。</div>
+      <div class="kana" id="kana-1"></div>
+      <canvas class="spark" id="spark-1" data-wave="0.05,0.12,0.10,0.18,0.32,0.28,0.22,0.36,0.40,0.22,0.18,0.12,0.08,0.06"></canvas>
+      <div class="metrics"><span>話速 7.2 chars/sec</span><span>平均F0 185 Hz</span><span>終端ΔRMS −7.2 dB</span></div>
+    </section>
+
+    <div class="gapline">→ 前ターンとの差 <strong>+320 ms</strong></div>
+
+    <!-- Turn 2: SPEAKER B -->
+    <section class="turn b" data-start="6.52" data-end="10.10">
+      <div class="meta"><div class="speaker">SPEAKER B</div><div class="time">0:06.52 – 0:10.10</div></div>
+      <div class="badge-row"><span class="chip ok">司会者 0.78</span><span class="chip bad">かぶせ癖 0.34</span><span class="chip">語尾上がり 0.66</span></div>
+      <div class="text">あら、その模試テスト、良かったのかな？</div>
+      <div class="kana" id="kana-2"></div>
+      <canvas class="spark" id="spark-2" data-wave="0.04,0.06,0.09,0.14,0.20,0.26,0.22,0.18,0.12,0.08,0.12,0.24,0.32,0.40"></canvas>
+      <div class="metrics"><span>話速 6.1 chars/sec</span><span>平均F0 210 Hz</span><span>終端F0傾き +0.19</span></div>
+    </section>
+
+    <div class="gapline">→ 前ターンとの差 <strong>−80 ms</strong>（かぶせ）</div>
+
+    <!-- Turn 3: SPEAKER A -->
+    <section class="turn a" data-start="10.02" data-end="12.40">
+      <div class="meta"><div class="speaker">SPEAKER A</div><div class="time">0:10.02 – 0:12.40</div></div>
+      <div class="badge-row"><span class="chip ok">せっかち 0.71</span><span class="chip">承認多め 0.58</span></div>
+      <div class="text">おめでとう、良かったね。</div>
+      <div class="kana" id="kana-3"></div>
+      <canvas class="spark" id="spark-3" data-wave="0.10,0.24,0.36,0.28,0.18,0.10,0.06,0.05,0.08,0.12,0.09,0.06"></canvas>
+      <div class="metrics"><span>話速 8.0 chars/sec</span><span>平均F0 175 Hz</span><span>オーバーラップ 80 ms</span></div>
+    </section>
+
+    <div class="legend">※ 背景色：A=青系、B=緑系。枠間にターンテイク時間を表示。</div>
+  </div>
+<script>
+function drawSpark(id){const c=document.getElementById(id);if(!c)return;const ctx=c.getContext('2d');const w=c.width=c.clientWidth;const h=c.height=c.clientHeight;const data=(c.dataset.wave||'').split(',').map(Number).filter(n=>!isNaN(n));if(!data.length)return;const pad=6;ctx.lineWidth=2;ctx.strokeStyle='rgba(124,198,255,.95)';ctx.beginPath();data.forEach((v,i)=>{const x=pad+(w-2*pad)*(i/(data.length-1));const y=h-pad-(h-2*pad)*v;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();}
+['spark-1','spark-2','spark-3'].forEach(drawSpark);
+</script>
+</body>
+</html>
