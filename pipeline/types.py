@@ -115,8 +115,8 @@ class SegmentSchema(BaseModel):
 
 
 class PipelineSettings(BaseModel):
-    diarization: str = "pyannote"
-    asr: str = "dummy"
+    diarization: str = "quick_cluster"
+    asr: str = "quick"
     emotion: str = "energy_based"
     pitch: str = "yin"
     loudness: str = "rms"
@@ -135,12 +135,15 @@ class PipelineSettings(BaseModel):
     pyannote_min_cluster_size: Optional[int] = None
     pyannote_min_duration_off: Optional[float] = None
     pyannote_num_speakers: Optional[int] = None
-    llm_enabled: bool = True
+    llm_enabled: bool = False
     llm_base_url: str = "http://192.168.40.182:1234/v1"
     llm_model: str = "openai/gpt-oss-20b"
     llm_api_key: str = ""
     llm_max_tokens: int = 512
     llm_temperature: float = 0.2
+    ref_dir: Optional[str] = None
+    comparison_html: bool = True
+    comparison_theme: str = "light"
 
 
 class SpeakerAggregate(BaseModel):

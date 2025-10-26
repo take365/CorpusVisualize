@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 import math
 import os
+import subprocess
+import sys
 import typer
 import yaml
 from dotenv import load_dotenv
@@ -30,6 +32,8 @@ from .features import (
 )
 from .emotion import EmotionAnalyzer
 from .llm import SegmentDraft, WordBoundary, refine_segments_with_llm
+from .report_html import generate_comparison_html
+from .quick_io import QuickArtifactsError, load_quick_artifacts
 from .types import PipelineSettings, SegmentSchema
 
 load_dotenv()
@@ -63,6 +67,8 @@ ENV_MAPPING: Dict[str, str] = {
     "CV_LLM_API_KEY": "llm_api_key",
     "CV_LLM_MAX_TOKENS": "llm_max_tokens",
     "CV_LLM_TEMPERATURE": "llm_temperature",
+    "CV_REF_DIR": "ref_dir",
+    "CV_COMPARISON_THEME": "comparison_theme",
 }
 
 
@@ -99,7 +105,10 @@ def _settings_from_env() -> Dict[str, str]:
                 values[field] = int(value)
             except ValueError:
                 pass
-    bool_mappings = [("CV_LLM_ENABLED", "llm_enabled")]
+    bool_mappings = [
+        ("CV_LLM_ENABLED", "llm_enabled"),
+        ("CV_COMPARISON_HTML", "comparison_html"),
+    ]
     for bool_key, field in bool_mappings:
         value = os.getenv(bool_key)
         if value is not None:
@@ -129,8 +138,103 @@ def _list_audio_files(input_dir: Path) -> List[Path]:
     return sorted(files)
 
 
+def _gather_audio_inputs(inputs: Iterable[Path], default_dir: Path) -> List[Path]:
+    collected: List[Path] = []
+    if inputs:
+        for item in inputs:
+            resolved = item.expanduser()
+            if resolved.is_dir():
+                collected.extend(_list_audio_files(resolved.resolve()))
+            elif resolved.is_file():
+                collected.append(resolved.resolve())
+            else:
+                raise typer.BadParameter(f"Input not found: {item}")
+    else:
+        collected = _list_audio_files(default_dir)
+    deduped: List[Path] = []
+    seen = set()
+    for path in collected:
+        if path not in seen:
+            seen.add(path)
+            deduped.append(path)
+    return deduped
+
+
+REFERENCE_EXTS = (".jsonl", ".json", ".txt")
+
+
+def _find_reference(conversation_id: str, ref_root: Path) -> Optional[Path]:
+    for ext in REFERENCE_EXTS:
+        candidate = ref_root / f"{conversation_id}{ext}"
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _needs_quick_artifacts(settings: PipelineSettings) -> bool:
+    diar = (settings.diarization or "").lower()
+    asr_method = (settings.asr or "").lower()
+    quick_aliases = {"quick", "quick_cluster"}
+    return diar in quick_aliases or asr_method in quick_aliases
+
+
+def _resolve_quick_data_root(output_root: Path) -> Path:
+    root = output_root.resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    os.environ["HMD_DATA_ROOT"] = str(root)
+    return root
+
+
+def _ensure_quick_artifacts(
+    audio_path: Path,
+    settings: PipelineSettings,
+    console: Console,
+    data_root: Path,
+) -> None:
+    if not _needs_quick_artifacts(settings):
+        return
+
+    conversation_id = audio_path.stem
+    try:
+        load_quick_artifacts(conversation_id, data_root=data_root)
+        return
+    except QuickArtifactsError:
+        pass
+
+    console.print(
+        f"[cyan]Running Quick clustering helper for {audio_path.name}[/cyan]"
+    )
+    cmd = [
+        sys.executable,
+        "-m",
+        "pipeline.hmd_quick_cluster",
+        str(audio_path),
+    ]
+    cmd.extend(["--data-root", str(data_root)])
+    project_env = Path(".env")
+    if project_env.exists():
+        cmd.extend(["--env", str(project_env.resolve())])
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"Quick clustering helper failed for {audio_path.name} (exit {exc.returncode})"
+        ) from exc
+
+    try:
+        load_quick_artifacts(conversation_id, data_root=data_root)
+    except QuickArtifactsError as exc:
+        raise RuntimeError(
+            f"Quick artifacts are still unavailable for {conversation_id}: {exc}"
+        ) from exc
+
+
 @app.command()
 def main(
+    inputs: List[Path] = typer.Argument(
+        None,
+        help="Audio files or directories to process. Overrides --input-dir when provided.",
+    ),
     input_dir: Path = typer.Option(
         DEFAULT_INPUT_DIR,
         help='Directory containing audio files',
@@ -166,6 +270,13 @@ def main(
     llm_api_key: Optional[str] = typer.Option(None, help="API key for LLM endpoint"),
     llm_max_tokens: Optional[int] = typer.Option(None, help="Maximum tokens for LLM response"),
     llm_temperature: Optional[float] = typer.Option(None, help="Sampling temperature for LLM response"),
+    ref_dir: Optional[Path] = typer.Option(None, help="Directory containing reference transcripts for comparison"),
+    comparison_html: Optional[bool] = typer.Option(
+        None,
+        "--comparison-html/--no-comparison-html",
+        help="Generate HTML comparison report when reference is available",
+    ),
+    comparison_theme: Optional[str] = typer.Option(None, help="Comparison HTML theme (light|dark)"),
     config: Optional[Path] = typer.Option(None, help="Optional YAML config"),
     limit: Optional[int] = typer.Option(None, help="Optional limit for number of files to process"),
 ) -> None:
@@ -197,11 +308,36 @@ def main(
         llm_api_key=llm_api_key,
         llm_max_tokens=llm_max_tokens,
         llm_temperature=llm_temperature,
+        ref_dir=str(ref_dir) if ref_dir is not None else None,
+        comparison_html=comparison_html,
+        comparison_theme=comparison_theme,
     )
 
     input_dir = input_dir.expanduser().resolve()
     output_dir = output_dir.expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    ref_dir_path: Optional[Path] = None
+    if settings.ref_dir:
+        candidate = Path(settings.ref_dir).expanduser()
+        try:
+            resolved = candidate.resolve()
+        except FileNotFoundError:
+            resolved = candidate
+        if resolved.exists():
+            ref_dir_path = resolved
+        else:
+            console.print(
+                f"[yellow]Reference directory not found; comparison HTML disabled ({resolved}).[/yellow]"
+            )
+    comparison_theme = (settings.comparison_theme or "light").lower()
+    if comparison_theme not in {"light", "dark"}:
+        console.print(
+            f"[yellow]Unknown comparison theme '{comparison_theme}'; falling back to 'light'.[/yellow]"
+        )
+        comparison_theme = "light"
+
+    quick_data_root = _resolve_quick_data_root(output_dir)
 
     pyannote_overrides: Dict[str, object] = {}
     if settings.pyannote_threshold is not None:
@@ -217,6 +353,7 @@ def main(
         settings.min_seg_sec,
         settings.max_seg_sec,
         overrides=pyannote_overrides or None,
+        quick_data_root=str(quick_data_root),
     )
     emotion_extractor = EmotionExtractor(settings.emotion)
     pitch_extractor = PitchExtractor(settings.pitch)
@@ -244,7 +381,7 @@ def main(
         else:
             console.print("[yellow]LLM base URL is empty; disabling LLM refinement.[/yellow]")
 
-    audio_files = _list_audio_files(input_dir)
+    audio_files = _gather_audio_inputs(inputs, input_dir)
     if limit is not None:
         audio_files = audio_files[:limit]
 
@@ -263,6 +400,7 @@ def main(
         task = progress.add_task("Processing audio", total=len(audio_files))
         for audio_path in audio_files:
             progress.update(task, description=f"Loading {audio_path.name}")
+            _ensure_quick_artifacts(audio_path, settings, console, quick_data_root)
             audio, sr = load_audio(audio_path, settings.sample_rate)
             conversation_id = audio_path.stem
             conversation_dir = output_dir / conversation_id
@@ -282,6 +420,7 @@ def main(
                 audio=audio,
                 sample_rate=sr,
                 language=settings.language,
+                quick_data_root=quick_data_root,
             )
 
             raw_drafts: List[SegmentDraft] = []
@@ -361,10 +500,15 @@ def main(
 
                 raw_lines.append(text_value)
 
+                try:
+                    source_rel = str(audio_path.relative_to(input_dir))
+                except ValueError:
+                    source_rel = audio_path.name
+
                 seg_schema = SegmentSchema(
                     id=f"{conversation_id}_s{idx:03d}",
                     conversation_id=conversation_id,
-                    source_file=str(audio_path.relative_to(input_dir)),
+                    source_file=source_rel,
                     start=seg.start,
                     end=seg.end,
                     speaker=seg.speaker,
@@ -411,6 +555,44 @@ def main(
             aggregates = aggregate_speakers(file_segments)
             df = aggregates_to_dataframe(aggregates)
             write_speakers_parquet(df, speakers_path)
+
+            if settings.comparison_html:
+                search_dirs: List[Path] = []
+                if ref_dir_path is not None:
+                    search_dirs.append(ref_dir_path)
+                parent_dir = audio_path.parent.resolve()
+                if parent_dir not in search_dirs:
+                    search_dirs.append(parent_dir)
+
+                ref_path: Optional[Path] = None
+                for directory in search_dirs:
+                    candidate = _find_reference(conversation_id, directory)
+                    if candidate is not None:
+                        ref_path = candidate
+                        break
+
+                if ref_path is None:
+                    console.print(
+                        f"[dim]Reference not found for {conversation_id}; skipping comparison HTML.[/dim]"
+                    )
+                else:
+                    try:
+                        report_root = conversation_dir / "viz"
+                        result = generate_comparison_html(
+                            segments_path,
+                            ref_path,
+                            report_root,
+                            title=f"{conversation_id} comparison",
+                            theme=comparison_theme,
+                            timestamped=False,
+                        )
+                        console.print(
+                            f"[green]Generated comparison HTML[/green] {result.html_path.relative_to(output_dir)}"
+                        )
+                    except Exception as exc:
+                        console.print(
+                            f"[yellow]Failed to generate comparison HTML for {conversation_id}: {exc}[/yellow]"
+                        )
 
     if not all_segments:
         console.print("[yellow]No segments produced. Check input data or parameters.[/yellow]")

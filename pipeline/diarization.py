@@ -251,6 +251,7 @@ def get_diarizer(
     min_seg: float,
     max_seg: float,
     overrides: Optional[Dict[str, object]] = None,
+    quick_data_root: Optional[str] = None,
 ) -> Callable[[np.ndarray, int], List[DiarizationSegment]]:
     name = (name or "").lower()
     energy_aliases = {"energy_basic", "energy", "energy_split", "dummy"}
@@ -265,6 +266,6 @@ def get_diarizer(
             return EnergyBasedDiarizer(min_seg=min_seg, max_seg=max_seg)
 
     if name in {"quick_cluster", "quick"}:
-        return QuickClusterDiarizer()
+        return QuickClusterDiarizer(data_root=quick_data_root)
 
     raise ValueError(f"Unsupported diarization method: {name}")

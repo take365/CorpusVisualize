@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import logging
+import os
 from typing import Dict, Iterable, List, Optional
 
 import numpy as np
@@ -221,8 +222,11 @@ def _transcribe_with_whisper(
     return results
 
 
-def _build_quick_asr_results(conversation_id: str) -> List[Dict[str, object]]:
-    artifacts = load_quick_artifacts(conversation_id)
+def _build_quick_asr_results(
+    conversation_id: str,
+    data_root: Optional[os.PathLike[str] | str] = None,
+) -> List[Dict[str, object]]:
+    artifacts = load_quick_artifacts(conversation_id, data_root=data_root)
     results: List[Dict[str, object]] = []
     total_words = 0
 
@@ -279,6 +283,7 @@ def transcribe(
     audio: Optional[np.ndarray] = None,
     sample_rate: Optional[int] = None,
     language: str = "ja",
+    quick_data_root: Optional[os.PathLike[str] | str] = None,
 ) -> List[TranscribedSegment]:
     """Return transcripts per diarized segment with optional word timings."""
     segment_list = list(segments)
@@ -297,7 +302,7 @@ def transcribe(
 
     if method == "quick":
         try:
-            asr_results = _build_quick_asr_results(conversation_id)
+            asr_results = _build_quick_asr_results(conversation_id, data_root=quick_data_root)
         except QuickArtifactsError as exc:
             raise RuntimeError(
                 f"Quick ASR artifacts unavailable for '{conversation_id}': {exc}"

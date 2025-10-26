@@ -56,7 +56,7 @@ except Exception:  # pragma: no cover
 # Defaults
 # -------------------------
 DFLT = {
-    "data_root": "HMD/data",
+    "data_root": str((Path(os.getenv("CV_OUTPUT_DIR", "output/pipeline")) / "quick_artifacts").resolve()),
     # Whisper
     "whisper_model": "large-v3-turbo",
     "whisper_language": "ja",
@@ -452,7 +452,7 @@ def save_scatter_pca2(
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="HMD Quick Cluster: Whisper → ECAPA → PCA2D KMeans → Save")
     ap.add_argument("audio", help="Input audio file (wav)")
-    ap.add_argument("--env", default="HMD/.env", help=".env path (optional)")
+    ap.add_argument("--env", default=None, help=".env path (optional)")
 
     # Paths
     ap.add_argument("--data-root", default=None, help="Output root (default: HMD/data)")
@@ -549,9 +549,17 @@ def main() -> None:
     X2 = pca2.fit_transform(Xp)
 
     # 4) KMeans selection
-    k_min, k_max = int(cfg["k_min"]), int(cfg["k_max"]) 
+    k_min, k_max = int(cfg["k_min"]), int(cfg["k_max"])
+    max_allowed = max(2, len(segments) - 1)
+    if max_allowed < 2:
+        raise SystemExit("Not enough segments for clustering")
     if len(segments) <= int(cfg["min_segments"]):
-        k_min = k_max = min(2, len(segments) - 1)
+        k_min = k_max = min(2, max_allowed)
+    else:
+        k_max = min(k_max, max_allowed)
+        k_min = min(k_min, k_max)
+        if k_min < 2:
+            k_min = 2
 
     if k_min == k_max:
         k_star = k_min
