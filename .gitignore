@@ -1,4 +1,5 @@
 # Python virtual environments
+.env
 .venv/
 research/speaker_diarization/.venv/
 # Python cache
@@ -30,6 +31,7 @@ data/
 tmp_audio/
 tmp_output/
 output/
+output_old/
 wav2vec2_checkpoints/
 
 pretrained_models/

@@ -160,7 +160,7 @@ def _gather_audio_inputs(inputs: Iterable[Path], default_dir: Path) -> List[Path
     return deduped
 
 
-REFERENCE_EXTS = (".jsonl", ".json", ".txt")
+REFERENCE_EXTS = (".txt", ".jsonl", ".json")
 
 
 def _find_reference(conversation_id: str, ref_root: Path) -> Optional[Path]:
